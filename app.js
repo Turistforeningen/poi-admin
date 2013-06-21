@@ -48,9 +48,11 @@
         /**
          * Delete POI
         */
-        layer.delete = function() {
+        layer.delete = function(cb) {
           $.getJSON(api + this.get('id') + '/?method=del&callback=?', function(data) {
-            // console.log(data);
+            if (typeof cb === 'function') {
+              cb(data);
+            }
           });
           pois.removeLayer(this);
         }
@@ -59,44 +61,69 @@
          * Save POI
         */
         layer.save = function() {
-          if (this._modifiedData.length === 0) { return; }
+          if (this._modifiedData.length === 0) {
+            this._saveDesc();
+            return;
+          }
           
-          var i, field, data;
+          var i, data, $this;
           
-          if (this.get('id') !== '') {
-            data = '?method=put';
-          } else {
-            data = '?method=post';
+          $this = this;
+          
+          if (this.get('id') === '') {
             this._modifiedData = ['navn', 'tags', 'obj_type', 'lat', 'lon'];
           }
           
+          data = '';
           for (var i = 0; i < this._modifiedData.length; i++) {
             if (layer._modifiedData[i] === 'tags') {
               this._setIcon();
             } else if (layer._modifiedData[i] === 'navn') {
               this._setPopup();
-            } else if (layer._modifiedData[i] === 'desc') {
-              // todo
-              continue;
             }
             data += '&' + layer._modifiedData[i] + '=' + this.get(layer._modifiedData[i]);
           }
           data += '&callback=?'
           
+          
           if (this.get('id') !== '') {
-            $.getJSON(api + this.get('id') + '/' + data, function(data) {
-              //console.log(data);
+            this._saveUpdate(data, function(data) {
+              $this._saveDesc();
             });
           } else {
-            var $this = this;
-            $.getJSON(api + data, function(data) {
-              //console.log(data);
-              $this.set('id', data.rows[0].id);
-              cache[data.rows[0].id] = $this;
+            this._saveInsert(data, function(data) {
+              $this._saveDesc();
             });
-          }          
+          }
           
           this._modifiedData = [];
+        }
+        
+        /**
+         * Save Update
+        */
+        layer._saveUpdate = function(data, cb) {
+          data = '?method=put' + data;
+          
+          $.getJSON(api + this.get('id') + '/' + data, function(data) {
+            cb(data);
+          });
+        }
+        
+        /**
+         * Savve Insert
+        */
+        layer._saveInsert = function(data, cb) {
+          data = '?method=post' + data;
+          
+          var $this = this;
+          
+          $.getJSON(api + data, function(data) {
+            $this.set('id', data.rows[0].id);
+            cache[data.rows[0].id] = $this;
+            
+            cb(data);
+          });
         }
         
         /**
@@ -110,8 +137,63 @@
           return this.feature.properties[key];
         }
         
+        layer.getDesc = function(cb) {
+          var $this = this;
+          // todo check if desc exists
+          if (this.get('id') !== '') {
+            $.getJSON(api + this.get('id') + '/tekster/?callback=?', function(data) {
+              if (data.rows.length > 0) {
+                $this.feature.properties.desc = data.rows[0].tekst;
+                $this.feature.properties.descId = data.rows[0].id;
+                $this.feature.properties.descModified = false;
+                cb(data.rows[0].tekst);
+              } else {
+                $this.feature.properties.desc = '';
+                $this.feature.properties.descId = null;
+                $this.feature.properties.descModified = false;            
+                cb('');
+              }
+            });
+          } else {
+            this.feature.properties.desc = '';
+            this.feature.properties.descId = null;
+            this.feature.properties.descModified = false;            
+            cb('');
+          }
+        }
+        
+        layer.setDesc = function(val, cb) {
+          if (this.feature.properties.desc === val) { return; }
+          
+          this.feature.properties.desc = val;
+          this.feature.properties.descModified = true;
+        }
+        
+        layer._saveDesc = function() {
+          if (!this.feature.properties.descModified) { return; }
+          
+          var id = this.feature.properties.descId;
+          var desc = this.feature.properties.desc;
+          
+          if (this.feature.properties.descId !== null) {
+            $.getJSON(api + this.get('id') + '/tekster/' + id +'/?method=put&tekst=' + desc + '&callback=?', function(data) {
+              if (typeof cb === 'function') {
+                cb(data);
+              }
+            });
+          } else {
+            $.getJSON(api + this.get('id') + '/tekster/?method=post&tekst=' + desc + '&callback=?', function(data) {
+              if (typeof cb === 'function') {
+                cb(data);
+              }
+            });
+          }          
+        }
+        
         /**
          * Set property data
+         *
+         * Should not be used for setting description
          *
          * @param key -
          * @param val - 
@@ -119,7 +201,7 @@
         layer.set = function(key, val) {
           if (this.feature.properties[key] !== val) {
             this.feature.properties[key] = val;
-            if (key !== 'id') {
+            if (key !== 'id' && key !== 'desc') {
               this._modifiedData.push(key);
             }
           }
@@ -183,7 +265,9 @@
                   
       $('#modal input[name=poi_id]').val(marker.get('id'));
       $('#modal input[name=poi_navn]').val(marker.get('navn'));
-      //$('#modal input[name=poi_desc]').val(data.desc);
+      marker.getDesc(function(desc) {
+        $('#modal textarea[name=poi_desc]').val(desc);
+      });
       
       $('.selectpicker').selectpicker('deselectAll');
       $('#modal select[name=poi_type]').selectpicker('val', tags[0]);
@@ -199,7 +283,7 @@
       var marker = lastMarker;
       
       var navn = $('#modal input[name=poi_navn]').val();
-      var desc = $('#modal input[name=poi_desc]').val();
+      var desc = $('#modal textarea[name=poi_desc]').val();
       var type1 = [$('#modal select[name=poi_type]').val()];
       var type2 = $('#modal select[name=poi_type2]').val();
       if (type2 === null || type2.length === 0) {
@@ -210,7 +294,7 @@
       
       marker.set('tags', tags);
       marker.set('navn', navn);
-      //marker.set('desc', desc);
+      marker.setDesc(desc);
       
       marker.save();
       
