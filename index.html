@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='iso-8859-1'>
+  <title>POI Admin</title>
+  <link rel="stylesheet" href="libs/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="libs/leaflet-draw/leaflet.draw.css" />
+  <link rel="stylesheet" href="libs/bootstrap-select/bootstrap-select.min.css" />
+  <!--[if lte IE 8]><link rel="stylesheet" href="libs/leaflet/leaflet.ie.css" /><![endif]-->
+  <!--[if lte IE 8]><link rel="stylesheet" href="libs/leaflet-draw/leaflet.draw.ie.css" /><![endif]-->
+  <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="app.css" />
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-38558206-1']);
+    _gaq.push(['_trackPageview']);
+    
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+</head>
+<body>
+<div id="map"></div>
+<div id="modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Endre POI</h3>
+  </div>
+  <div class="modal-body" style="overflow: visible;">
+    <form class="form-horizontal">
+      <div class="control-group">
+        <label class="control-label" for="poi_title">Tittel</label>
+        <div class="controls">
+          <input type="hidden" name="poi_id" value="">
+          <input type="hidden" name="poi_lat" value="">
+          <input type="hidden" name="poi_lng" value="">
+          <input type="text" name="poi_title" class="input-xlarge" placeholder="POI tittel">
+        </div>
+      </div>
+              
+      <div class="control-group">
+        <label class="control-label" for="poi_type">Kategori</label>
+        <div class="controls">
+          <select name="poi_type" class="selectpicker">
+            <option value="21"+>Fjelltopp</option>
+            <option value="25">Utkikkspunkt</option>
+            <option value="26">Badeplass</option>
+            <option value="27">Fiskeplass</option>
+            <option value="28">Grotte</option>
+            <option value="29">Klatrefelt</option>
+            <option value="30">Rasteplass</option>
+            <option value="31">Bålplass</option>
+            <option value="32">Teltplass</option>
+            <option value="33">Gapahuk</option>
+            <option value="34">Serveringssted</option>
+            <option value="36">Multemyr</option>
+            <option value="37">Dykkefelt</option>
+            <option value="38">Ski-og akebakke</option>
+            <option value="39">Surfested</option>
+            <option value="40">Kitested</option>
+            <option value="42">Rastebu</option>
+          </select>
+        </div>
+      </div>
+        
+      <div class="control-group">
+        <label class="control-label" for="poi_desc">Er også</label>
+        <div class="controls">
+          <select name="poi_type2" class="selectpicker" multiple="true">
+            <option value="21">Fjelltopp</option>
+            <option value="25">Utkikkspunkt</option>
+            <option value="26">Badeplass</option>
+            <option value="27">Fiskeplass</option>
+            <option value="28">Grotte</option>
+            <option value="29">Klatrefelt</option>
+            <option value="30">Rasteplass</option>
+            <option value="31">Bålplass</option>
+            <option value="32">Teltplass</option>
+            <option value="33">Gapahuk</option>
+            <option value="34">Serveringssted</option>
+            <option value="36">Multemyr</option>
+            <option value="37">Dykkefelt</option>
+            <option value="38">Ski-og akebakke</option>
+            <option value="39">Surfested</option>
+            <option value="40">Kitested</option>
+            <option value="42">Rastebu</option>
+          </select>
+        </div>
+      </div>
+        
+      <div class="control-group">
+        <label class="control-label" for="poi_desc">Beskrivelse</label>
+        <div class="controls">
+          <input type="hidden" name="poi_desc_id" value="">
+          <textarea name="poi_desc" class="input-xlarge" rows="6" cols="10"></textarea>
+        </div>
+      </div>
+      
+    </form>
+  </div>
+  
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Avbryt</button>
+    <button class="btn btn-primary">Lagre</button>
+  </div>
+</div>
+
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+<script src="libs/bootstrap-select/bootstrap-select.min.js"></script>
+<script src="libs/leaflet/leaflet.js"></script>
+<script src="libs/leaflet-draw/leaflet.draw.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

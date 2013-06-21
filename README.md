@@ -1,4 +1,4 @@
-poiadmin
-========
+POI Admin
+=========
 
-Point Of Interest (POI) management system for NTB
+`@todo`
